@@ -1,6 +1,6 @@
-const Manager = require("../lib/Manager");
-const Engineer = require("../lib/Engineer");
-const Intern = require("../lib/Intern");
+const Manager = require("./lib/Manager");
+const Engineer = require("./lib/Engineer");
+const Intern = require("./lib/Intern");
 const inquirer = require("inquirer");
 const path = require("path");
 const fs = require("fs");
@@ -8,15 +8,89 @@ const fs = require("fs");
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
-const render = require("../lib/htmlRenderer");
+const render = require("./lib/htmlRenderer");
+
+const teamMembers = [];
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+function getInformation() {
+  return inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "What is the employees name?",
+      },
+      {
+        type: "input",
+        name: "id",
+        message: "What is your id number?",
+      },
+      {
+        type: "input",
+        name: "email",
+        message: "What is your email?",
+      },
+      {
+        type: "list",
+        name: "role",
+        message: "What role is this employee?",
+        choices: ["Manager", "Intern", "Engineer"],
+      },
+    ])
+    .then(function (answer) {
+      switch (answer.role) {
+        case "Manager":
+          return inquirer.prompt([
+            {
+              type: "input",
+              name: "officeNumber",
+              message: "Please enter office number:",
+            },
+          ]);
 
+        case "Engineer":
+          return inquirer
+            .prompt([
+              {
+                type: "input",
+                message: "Enter Github:",
+                name: "github",
+              },
+            ])
+            .then(function (answer) {
+              const Engineer = new Engineer(
+                answer.name,
+                answer.id,
+                answer.email,
+                answer.github
+              );
+              teamMembers.push(Engineer);
+            });
+
+        case "Intern":
+          return inquirer.prompt([
+            {
+              type: "input",
+              message: "Please enter your school",
+              name: "school",
+            },
+          ]);
+      }
+    });
+}
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
+getInformation().then(function () {
+  let html = render(teamMembers);
 
+  fs.writeFile(outputPath, html, (err) => {
+    if (err) throw err;
+    return "SAVED";
+  });
+});
 // After you have your html, you're now ready to create an HTML file using the HTML
 // returned from the `render` function. Now write it to a file named `team.html` in the
 // `output` folder. You can use the variable `outputPath` above target this location.
