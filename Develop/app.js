@@ -70,13 +70,23 @@ function getInformation() {
             });
 
         case "Intern":
-          return inquirer.prompt([
-            {
-              type: "input",
-              message: "Please enter your school",
-              name: "school",
-            },
-          ]);
+          return inquirer
+            .prompt([
+              {
+                type: "input",
+                message: "Please enter your school",
+                name: "school",
+              },
+            ])
+            .then(function (answer) {
+              const Intern = new Intern(
+                answer.name,
+                answer.id,
+                answer.email,
+                answer.school
+              );
+              teamMembers.push(Intern);
+            });
       }
     });
 }
